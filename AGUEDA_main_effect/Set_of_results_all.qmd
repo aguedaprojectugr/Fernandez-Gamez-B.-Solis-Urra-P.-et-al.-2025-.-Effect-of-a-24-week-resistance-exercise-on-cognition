@@ -1,0 +1,434 @@
+---
+title: "Automatic set of result"
+author: Patricio Solis-Urra & Beatriz Fernandez-Gamez
+#editor: visual
+format: docx
+---
+
+```{r,echo=F}
+#| echo: false
+#| label: settings
+#| include: false
+library(here)
+library(flextable)
+library(officer)
+library(tidyverse)
+source(here("02_scripts/01_data.R"))
+source(here("02_scripts/02_Figure_2.R"))
+source(here("02_scripts/03_Figure_3.R"))
+
+library(extrafont) 
+#font_import()
+```
+
+```{r}
+
+```
+# Principal paper
+
+##Fig1
+::: {#fig-1}
+![fig-1](03_outputs/figures/figure1_flowchart.tiff){width="10in"}
+
+CONSORT Flow Diagram of the AGUEDA trial.
+:::
+
+{{< pagebreak >}}
+##Fig2
+::: {#fig-2}
+![fig-2](03_outputs/figures/Figure_2_600.tiff){height="8in"}
+
+Intention-to-treat effects of the 24-week resistance exercise intervention on executive function for the whole sample (A–mean values; B–individual values) and for subgroups (C). A. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals). B. Dots indicate participant individual raw values. C. Dots indicate mean difference of marginal means and 95% Confidence Intervals) between exercise and control in each subgroup.
+:::
+
+{{< pagebreak >}}
+
+:::: landscape
+##Fig3
+::: {#fig-3}
+![fig-3](03_outputs/figures/Figure_3_600.tiff){width="10in"}
+
+Intention-to-treat effects of the 24-weeks resistance exercise intervention on cognitive domains for the whole sample (A) and for subgroups (B). A. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals). B. Dots indicate mean difference of marginal means and 95% Confidence Intervals) between exercise and control in each subgroup.
+:::
+::::
+
+{{< pagebreak >}}
+
+::: {#fig-4}
+##Fig4
+![fig-4](03_outputs/figures/Figure_4_600.tiff){height="7in"}
+
+Intention-to-treat effects of the 24-weeks resistance exercise intervention on physical parameters (A) and correlation of Knee extension changes with cognitive function changes(B). A. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals). B. Dots indicate individual raw changes of each variable.
+:::
+
+{{< pagebreak >}}
+
+::: {#fig-5}
+![fig-5](03_outputs/figures/Figure_5_600.tiff){height="60in"}
+
+Attendance (A) and intensity (B) of the AGUEDA resistance exercise intervention.
+:::
+
+{{< pagebreak >}}
+
+##Table 1 can be found in the folder */03_outputs/tables*
+
+##Table 2
+```{r}
+#| echo: false
+#| label: table1-settings
+#| include: false
+
+
+# 2. Table 2 -------------------------------------------------------
+
+variablestable2= c(
+                   "screen_gender", 
+                   "ethic_com_age",
+                   "screen_years_edu",
+                   "screen_years_edu_cat", 
+                   "dxa_ht_ave",
+                   "dxa_wt_ave",
+                   "dxa_bmi",
+                   "disease_advance_comor_cat",
+                   "gen_apoee4_carrier", 
+                   "pet_amyloid_status_mni",
+                   "screen_smds4_score",
+                   "screen_tics_score",
+                   "mmse_total_score", 
+                   "moca_total_score", 
+                   "comp_ex_func_mean_z",
+                   "episodic_mem_mean_z",
+                   "processing_speed_mean_z",
+                   "working_mem_mean_z",
+                   "attentional_control_mean_z",
+                   "visuospatial_mean_z",
+                   "strength_mean_z",
+                   "pf_comp_z",
+                   "crf_comp_z"
+)
+
+Overall <- print(tableone::CreateTableOne(vars = variablestable2, addOverall = F,
+                                          data = filter(data, redcap_event_name == "Pre")), showAllLevels = F)
+Bygroup <- print(tableone::CreateTableOne(vars = variablestable2,
+                                          strata ="rand_group", data=filter(data, redcap_event_name == "Pre")), showAllLevels = F)
+table2 <- as.data.frame(cbind(Overall, Bygroup)) %>% dplyr::select(-c(p, test))
+data.table::setDT(table2, keep.rownames = TRUE)[] %>% View()
+
+table2 = table2 %>% mutate(rn = case_when(
+  startsWith(rn,"ethic_com_age") ~ "Age at baseline, yr",
+  startsWith(rn,"screen_gender") ~ "Female, No. (%)",
+  startsWith(rn,"screen_years_edu (mean (SD))") ~ "Education length, yr",
+  startsWith(rn,"screen_years_edu_cat = Low (%)") ~ "12 yr of education or less, n (%)",
+  startsWith(rn,"dxa_ht") ~ "Height, cm",
+  startsWith(rn,"dxa_wt") ~ "Weight, kg",
+  startsWith(rn,"dxa_bmi") ~ "Body-mass index, kg/m²",
+  startsWith(rn,"disease") ~ "More than 2 comorbidities , n (%)",
+  startsWith(rn,"gen_apoee4_carrier") ~ " ApoE ε4 carrier, n (%)",
+  startsWith(rn,"pet_amyloid_status_mni") ~ "Amyloid positive, n (%)",
+  startsWith(rn,"screen_smds4_score") ~ "Subjective cognitive decline, score",
+  startsWith(rn,"screen_tics") ~ "Telephone Interview of Cognitive Status, score",
+  startsWith(rn,"moca_total_score") ~ "Montreal Cognitive Assessment, score",
+  startsWith(rn,"mmse_total_score") ~ "Mini‑Mental State Examination , score",
+  startsWith(rn,'comp_ex_func') ~ "Executive function, z-score",
+  startsWith(rn,'episodic_mem_mean') ~ "Episodic memory, z-score",
+  startsWith(rn,'processing_speed_mean') ~ "Processing speed, z-score",
+  startsWith(rn,'working_mem_mean') ~ "Working memory, z-score",
+  startsWith(rn,'attentional_control_mean') ~ "Attentional/inhibitory control, z-score",
+  startsWith(rn,'visuospatial_mean') ~ "Visuospatial processing, z-score",
+  startsWith(rn,'strength_mean') ~ "Muscular strength, z score",
+  startsWith(rn,'pf_comp') ~ "Physical function, z score",
+  startsWith(rn,'crf_comp') ~ "Cardiorespitaroy fitness, score",
+)
+) 
+
+table2 = table2 %>%  
+    mutate(group = c(rep(c('Overall characteristics'),12),
+                     rep(c('Cognitive status'), 3),
+                     rep(c('Cognitive function'), 6),
+                     rep(c('Physical condition parameters'), 3)
+                     
+    )
+    )
+
+#write.xlsx(table2, "table2.xlsx")
+table2 = table2 %>% dplyr::select(rn,Overall,Exercise,Control,group)
+```
+
+```{r}
+#| echo: false
+#| label: table2
+title1 <- flextable::as_paragraph(
+  'Table 1. Baseline descriptive characteristics of the AGUEDA sample.'
+)
+table_footer = 'Abbreviations: m, meters; n, number; N/m: Newton/meters, SD, standard deviation; sec, seconds; yr, years. *Reverted variable (*-1) for easy interpretation, higher score, the better performance.'
+
+set_flextable_defaults(font.family = "Arial",
+                       table_align = "center",
+                       font.size = 7, 
+                       layout = "autofit",
+                       border.color = "black",
+                       split = T, 
+                       padding = 2, 
+                       text.align = "center")
+
+table2 %>%  as_grouped_data(groups = c("group"), columns = NULL) %>%
+  as_flextable(show_coltype = F, max_row = 40, part = "all",align = 'center',hide_grouplabel = TRUE) %>% 
+  add_header_row(top =TRUE, values = c("", "All","Exercise group","Control group")) %>% 
+  set_header_labels(rn = '', 
+                    Outcomes ="", 
+                    Overall = "Mean ± SD", 
+                    Exercise = "Mean ± SD", 
+                    Control = "Mean ± SD") %>% 
+  align(align = 'center',j = 2:4, part = 'all') %>% 
+  add_header_lines(top = T, values = title1) %>% 
+  hline_top(j = 1:4, part = 'header', officer::fp_border(color = "white", width = 3)) %>% 
+  delete_rows(part = 'footer') %>% 
+  add_footer_lines(table_footer) %>% autofit() %>% 
+   padding(i = ~ is.na(group), j = 1,padding.left = 10) %>% 
+  save_as_docx(path = "03_outputs/tables/Table_1.docx")
+
+
+  
+
+```
+
+{{< pagebreak >}}
+
+#Supplementary material
+##Table S1, S2, S3, S4, S5, S6, S7, S8, S9, S10 can be found in the folder */04_supplementary/tables*
+
+{{< pagebreak >}}
+##Table S11
+```{r}
+#| echo: false
+#| label: tableS11-settings
+#| include: false
+#source(here("02_scripts/02_Figure_2.R"))
+#results_table3 = results_table3 %>% bind_rows(results_table3s)
+
+results_tableS11 <- results_tableS11 %>%
+    mutate(across(everything(), ~ str_replace_all(., "\\[", "(") %>% str_replace_all("\\]", ")")))
+
+results_tableS11 = results_tableS11 %>% 
+  separate_wider_delim(outcome,delim = '.', names = c('mod','group','outcome'))
+
+results_tableS11$outcome = factor(results_tableS11$outcome,levels = c('comp_ex_func_mean_z'#, 
+                                                                  #'attentional_control_mean_z',
+                                                                  #'episodic_mem_mean_z',
+                                                                  #'processing_speed_mean_z',
+                                                                  #'visuospatial_mean_z',
+                                                                  #'working_mem_mean_z'
+                                                                  ))
+
+results_tableS11 = results_tableS11 %>% dplyr::select(-c(emm_group_diff_post,p.value))
+
+tableS11 = results_tableS11 %>% pivot_wider(id_cols = c(mod,group), values_from = 4:6,
+                               names_from = outcome,    names_vary = 'slowest')
+
+tableS11 = tableS11 %>% mutate(mod = case_when(
+  startsWith(mod,"screen_gender") ~ "Sex",
+  startsWith(mod,"rand_age_group") ~ "Age (cut-off 72 years old)",
+  startsWith(mod,"screen_years_edu_cat") ~ "Educational level (cut-off 12 years)",
+  startsWith(mod,"gen_apoee4_carrier") ~ "APOE carrier",
+  startsWith(mod,"pet_amyloid_status_mni") ~ "Amyloid burden (cut-off 12 CL)",
+  startsWith(mod,"comp_ex_func_mean_z_cat") ~ "Executive function (median)",
+  startsWith(mod,"screen_smds4_") ~ "Subjective cognitive decline (median)",
+  startsWith(mod,'disease_advance') ~ "Comorbidities (median)",
+  TRUE ~ mod))
+
+tableS11 = tableS11 %>% rename_with(~ str_remove(., "All_ci_*|Exe_ci_post_*|Con_ci_post*"), everything()) 
+tableS11 = tableS11 %>% rename_with(~ gsub('_mean_z', '', .x), everything())
+
+
+```
+
+::::: {#table-S11}
+```{r}
+#| echo: false
+#| label: tableS11
+library(flextable)
+FitFlextableToPage <- function(ft, pgwidth = 11){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+#tableS3 = tableS3 %>% 
+#  rename_with(~ contains(., 'episodic', 'Episodiccc')) %>%
+#  rename_with(~ contains(., 'attentional', 'Attttentional'))
+titleS11 <- as_paragraph(
+  'Table S3. Intention-to-treat effects of the 24-weeks resistance exercise intervention on executive function for subgroups.'
+)
+table_footer = 'Values indicate estimated marginal means at each time point (and 95% Confidence Intervals).'
+
+set_flextable_defaults(font.family = "Arial",
+                       table_align = "center",
+                       font.size = 6, 
+                       layout = "autofit",
+                       border.color = "black",
+                       #split = T, 
+                       #padding = 2, 
+                       text.align = "center")
+
+#tableS3 = tableS3 %>% dplyr::select(c(1:2,12:14,3:5,6:8,15:17,9:11))
+
+tableS11 %>% 
+  as_grouped_data(groups = c("mod"), columns = NULL) %>%
+    as_flextable(show_coltype = FALSE, max_row = 40, part = "all", align = 'center', hide_grouplabel = TRUE) %>%
+  delete_part(part = "header") %>% 
+ add_header_row(top = TRUE, values = c("", c('Executive function')), colwidths = c(1,3)) %>%
+hline_top(j = 1:4, part = 'body', officer::fp_border(color = "black", width = 1)) %>% 
+#set_header_labels(values= NULL,
+#                    group = '', 
+#                    #Overall = "post", 
+#                    Exe_ci_post = "Exercise", 
+#                    Con_ci_post = "Control") %>% 
+       add_header_row(top = F, values = c("", rep(c("All-Pre","Exercise-Post","Control-Post"),1)), #colwidths = #c(1,5,5)
+                      ) %>%
+  align(align = 'center',j = 2:4, part = 'all') %>% 
+  add_header_lines(top = T, values = titleS11) %>% 
+  #hline_top(j = 1:11, part = 'header', officer::fp_border(color = "white", width = 3)) %>% 
+  delete_rows(part = 'footer') %>% 
+  add_footer_lines(table_footer) %>%
+  #%>%  hline(i = ~ !is.na(group), border = officer::fp_border() )
+  #padding(padding.left = 0, padding.right = 0) %>% 
+  padding(i = ~ is.na(group) == F, j = 1,padding.left = 10) %>% 
+  autofit() %>%  #%>% FitFlextableToPage() #%>% set_table_properties(width = 1, layout = "autofit")
+  save_as_docx(path = "04_supplementary/tables/Table_S11.docx")
+```
+
+##Table S12-13
+```{r,message=FALSE,warning=FALSE}
+#| echo: false
+#| label: tableS12_13-settings
+#| include: false
+#source(here("02_scripts/03_Figure_3.R"))
+
+#results_table3 = results_table3 #%>% bind_rows(results_table3s)
+results_table3 <- results_table3 %>%
+    mutate(across(everything(), ~ str_replace_all(., "\\[", "(") %>% str_replace_all("\\]", ")")))
+
+results_table4 = results_table3 %>% 
+  separate_wider_delim(outcome,delim = '.', names = c('mod','group','outcome'))
+
+results_table4$outcome = factor(results_table4$outcome,levels = c( #'comp_ex_func_mean_z', 
+                                                                  'attentional_control_mean_z',
+                                           'episodic_mem_mean_z',
+                                           'processing_speed_mean_z',
+                                           'visuospatial_mean_z',
+                                           'working_mem_mean_z'))
+
+results_table4 = results_table4 %>% dplyr::select(-c(emm_group_diff_post,p.value))
+
+tableS12 = results_table4 %>% pivot_wider(id_cols = c(mod,group), values_from = 4:6,
+                               names_from = outcome,    names_vary = 'slowest')
+
+tableS12 = tableS12%>% filter(mod != 'comp_ex_func_mean_z_cat') 
+tableS12adj = tableS12 %>% 
+  filter(endsWith(mod,'z_cat'))
+tableS12adj2 = data.frame(tableS12adj[1:2,1:5],
+                         tableS12adj[3:4,6:8],
+                         tableS12adj[5:6,9:11],
+                         tableS12adj[7:8,12:14],
+                         tableS12adj[9:10,15:17])
+tableS12adj2$mod = rep(c('Baseline cognitive domain'),2)
+tableS12 = tableS12 %>% filter(!endsWith(mod,'z_cat'))
+tableS12 = tableS12 %>% bind_rows(tableS12adj2)
+
+tableS12 = tableS12 %>% rename_with(~ str_remove(., "All_ci_*|Exe_ci_post_*|Con_ci_post*"), everything()) 
+tableS12 = tableS12 %>% rename_with(~ gsub('_mean_z', '', .x), everything())
+
+tableS12 = tableS12 %>% mutate(mod = case_when(
+  startsWith(mod,"screen_gender") ~ "Sex",
+  startsWith(mod,"rand_age_group") ~ "Age (cut-off 72 years old)",
+  startsWith(mod,"screen_years_edu_cat") ~ "Educational level (cut-off 12 years)",
+  startsWith(mod,"gen_apoee4_carrier") ~ "APOE carrier",
+  startsWith(mod,"pet_amyloid_status_mni") ~ "Amyloid burden (cut-off 12 CL)",
+  startsWith(mod,"comp_ex_func_mean_z_cat") ~ "Executive function (median)",
+  startsWith(mod,"screen_smds4_") ~ "Subjective cognitive decline (median)",
+  startsWith(mod,'disease_advance') ~ "Comorbidities (median)",
+  TRUE ~ mod))
+
+```
+
+::: {#table-S4}
+```{r}
+#| echo: false
+#| label: tableS12_13
+library(flextable)
+FitFlextableToPage <- function(ft, pgwidth = 11){
+
+  ft_out <- ft %>% autofit()
+
+  ft_out <- width(ft_out, width = dim(ft_out)$widths*pgwidth /(flextable_dim(ft_out)$widths))
+  return(ft_out)
+}
+#tableS3 = tableS3 %>% 
+#  rename_with(~ contains(., 'episodic', 'Episodiccc')) %>%
+#  rename_with(~ contains(., 'attentional', 'Attttentional'))
+titleS12 <- as_paragraph(
+  'Table S12. Intention-to-treat effects of the 24-weeks resistance exercise intervention on cognitive domains for subgroups.'
+)
+table_footer = 'Values indicate estimated marginal means at each time point (and 95% Confidence Intervals).'
+
+set_flextable_defaults(font.family = "Arial",
+                       table_align = "center",
+                       font.size = 5, 
+                       layout = "autofit",
+                       border.color = "black",
+                       #split = T, 
+                       #padding = 2, 
+                       text.align = "center")
+
+tableS12 = tableS12 %>% dplyr::select(c(1:2,12:14,3:5,6:8,15:17,9:11))
+
+tableS12 %>% 
+  as_grouped_data(groups = c("mod"), columns = NULL) %>%
+    as_flextable(show_coltype = FALSE, max_row = 40, part = "all", align = 'center', hide_grouplabel = TRUE) %>%
+  delete_part(part = "header") %>% 
+ add_header_row(top = TRUE, values = c("", c("Attentional/inhibitory control",
+                                             "Episodic memory","Processing speed",
+                                             "Visuospatial processing","Working memory")), colwidths = c(1,rep(3,5))) %>%
+hline_top(j = 1:16, part = 'body', officer::fp_border(color = "black", width = 1)) %>% 
+#set_header_labels(values= NULL,
+#                    group = '', 
+#                    #Overall = "post", 
+#                    Exe_ci_post = "Exercise", 
+#                    Con_ci_post = "Control") %>% 
+       add_header_row(top = F, values = c("", rep(c("All-Pre","Exercise-Post","Control-Post"),5)), #colwidths = #c(1,5,5)
+                      ) %>%
+  align(align = 'center',j = 2:16, part = 'all') %>% 
+  add_header_lines(top = T, values = titleS12) %>% 
+  #hline_top(j = 1:11, part = 'header', officer::fp_border(color = "white", width = 3)) %>% 
+  delete_rows(part = 'footer') %>% 
+  add_footer_lines(table_footer) %>%
+  #%>%  hline(i = ~ !is.na(group), border = officer::fp_border() )
+  #padding(padding.left = 0, padding.right = 0) %>% 
+  padding(i = ~ is.na(group) == F, j = 1,padding.left = 10) %>% 
+  autofit() %>% FitFlextableToPage() %>% #%>% set_table_properties(width = 1, layout = "autofit")
+  save_as_docx(path = "04_supplementary/tables/Table_S12.docx")
+
+```
+:::
+
+{{< pagebreak >}}
+##Table S14 can be found in the folder */04_supplementary/tables*
+
+{{< pagebreak >}}
+##Figure S1 and S2 can be found in the folder */04_supplementary/figures*
+
+{{< pagebreak >}}
+##Figure S3
+![Figure S3. Mediation models of the Intervention effects by knee extension on executive function and cognitive domains. \*Negative % of mediation.](04_supplementary/figures/Figure_S3_600.tiff){height="20in"}
+{{< pagebreak >}}
+##Figure S4
+![Figure S4. Intention-to-treat effects at 12 and 24 weeks of the resistance exercise intervention on executive function showing mean values (A) and individual values (B). A. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals). B. Dots indicate participant individual raw values.](04_supplementary/figures/Figure_S4_600.tiff){height="8in"}
+{{< pagebreak >}}
+##Figure S5
+![Figure S5. Per-protocol effects of the 24-week resistance exercise intervention on executive function and cognitive domains. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals).](04_supplementary/figures/Figure_S5_600.tiff){height="8in"}
+{{< pagebreak >}}
+##Figure S6
+![Figure S6. Intention-to-treat effects at 12 and 24 weeks of the resistance exercise intervention on executive function showing mean values (A) and individual values (B). A. Dots indicate estimated marginal means at each time point (and 95% Confidence Intervals). B. Dots indicate participant individual raw values, Winsorized values \>4SD.](04_supplementary/figures/Figure_S6_600.tiff){height="8in"}
+
